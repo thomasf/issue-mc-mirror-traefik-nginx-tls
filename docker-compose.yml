@@ -1,0 +1,81 @@
+version: "2"
+
+# networks:
+#  traefik:
+#    external:
+#      name: traefik
+
+services:
+  traefik:
+    image: traefik:v1.3.1
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # - ./docker.tmpl:/etc/traefik/docker.tmpl:ro
+      - ./traefik.toml:/etc/traefik/traefik.toml:ro
+      - ./key.pem:/etc/key.pem:ro
+      - ./cert.pem:/etc/cert.pem:ro
+      # - ./rules.toml:/etc/traefik/rules.toml:ro
+      # - /srv/traefik/acme/:/etc/acme/
+    # networks:
+    #   # - default
+    #   - traefik
+
+  nginx:
+    image: nginx:1.10
+    ports:
+      - "8000:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./key.pem:/etc/key.pem:ro
+      - ./cert.pem:/etc/cert.pem:ro
+    # networks:
+    #   # - default
+    #   - traefik
+
+  minio1:
+    image: minio/minio
+    command: minio server /export
+    environment:
+      - MINIO_ACCESS_KEY=testTESTtest
+      - MINIO_SECRET_KEY=testTESTtest
+    # volumes:
+    #   - /srv/somename/minio/export:/export
+    #   - /srv/somename/minio/config:/root/.minio
+    # networks:
+    # #   - default
+    #   - traefik
+    labels:
+      traefik.backend: test-minio
+      traefik.port: "9000"
+      traefik.frontend.rule: Host:test.localhost.23c.se
+      # traefik.frontend.rule: Host:localhost
+      # traefik.docker.network: traefik
+      traefik.enable: "true"
+      traefik.passHostHeader: "true"
+
+  minio2:
+    image: minio/minio
+    command: minio server /export
+    environment:
+      - MINIO_ACCESS_KEY=testTESTtest
+      - MINIO_SECRET_KEY=testTESTtest
+    # volumes:
+    #   - /srv/somename/minio/export:/export
+    #   - /srv/somename/minio/config:/root/.minio
+    # networks:
+    #   - default
+    #   - traefik
+    ports:
+      - "9000:9000"
+    labels:
+      traefik.backend: test-minio2
+      traefik.port: "9000"
+      traefik.frontend.rule: Host:test2.localhost.23c.se
+      # traefik.frontend.rule: Host:localhost
+      # traefik.docker.network: traefik
+      traefik.enable: "true"
+      traefik.passHostHeader: "true"

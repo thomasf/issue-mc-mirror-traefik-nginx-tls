@@ -1,0 +1,53 @@
+################################################################
+# Global configuration
+################################################################
+
+# logLevel = "WARN"
+#logLevel = "ERROR"
+logLevel = "DEBUG"
+
+# defaultEntryPoints = ["http"]
+defaultEntryPoints = ["http", "https"]
+
+# [acme]
+# email = "hello@example.com"
+# storage = "/etc/acme/acme.json"
+# entryPoint = "https"
+# onDemand = true
+
+
+#[[acme.domains]]
+#  main = "t.jossystem.se"
+#  sans = ["thomas.jossystem.se"]
+
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":80"
+    [entryPoints.http.redirect]
+      entryPoint = "https"
+  [entryPoints.https]
+  address = ":443"
+  # compress = true
+    [entryPoints.https.tls]
+      [[entryPoints.https.tls.certificates]]
+        CertFile = "/etc/cert.pem"
+        KeyFile = "/etc/key.pem"
+
+[web]
+address = ":8080"
+ReadOnly = true
+[web.statistics]
+RecentErrors = 10
+[web.metrics.prometheus]
+Buckets=[0.1,0.3,1.2,5.0]
+
+[docker]
+endpoint = "unix:///var/run/docker.sock"
+domain = "something.example.com"
+watch = true
+# filename = "/etc/traefik/docker.tmpl"
+exposedbydefault = false
+
+# [file]
+# filename = "/etc/traefik/rules.toml"
